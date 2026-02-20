@@ -1,0 +1,145 @@
+const LEGACY_REAL_ESTATE_IMAGE_POOL = [
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600607687644-c7f34b5fba5f?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=1600&q=80"
+];
+
+const PREVIOUS_AUTO_IMAGE_POOL = [
+  ...LEGACY_REAL_ESTATE_IMAGE_POOL,
+  "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80"
+];
+
+export const REAL_ESTATE_IMAGE_POOL = [
+  "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1576941089067-2de3c901e126?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600607687644-c7f34b5fba5f?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80"
+];
+
+const LEGACY_IMAGE_SET = new Set(PREVIOUS_AUTO_IMAGE_POOL);
+const AUTO_IMAGE_MAP_KEY = "propertyAutoImageMapV1";
+
+export const money = (n) => Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0 });
+
+export const statusBadgeClass = (status) => `badge badge-soft status-${(status || "pending").toLowerCase()}`;
+
+export const tripAttendees = (trip) => {
+  if (Array.isArray(trip?.attendees)) return trip.attendees;
+  if (Array.isArray(trip?.members)) return trip.members;
+  return [];
+};
+
+export const tripStatus = (trip) => String(trip?.status || "planned").toLowerCase();
+
+export const tripCustomerLabel = (trip) => {
+  const explicit = String(trip?.customer || "").trim();
+  if (explicit) return explicit;
+  const attendees = tripAttendees(trip);
+  return attendees.length ? attendees[0] : "-";
+};
+
+export const tripPropertyIds = (trip) => {
+  if (Array.isArray(trip?.propertyIds)) return trip.propertyIds.map((id) => String(id));
+  if (Array.isArray(trip?.properties)) return trip.properties.map((id) => String(id));
+  if (trip?.propertyId) return [String(trip.propertyId)];
+  return [];
+};
+
+export const estimateTripTravelMinutes = (stopCount) => {
+  const n = Number(stopCount || 0);
+  if (n <= 0) return 0;
+  if (n === 1) return 12;
+  return 12 + (n - 1) * 18;
+};
+
+const hashString = (value) => {
+  const input = String(value || "");
+  let hash = 0;
+  for (let i = 0; i < input.length; i += 1) {
+    hash = (hash << 5) - hash + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+};
+
+const readAutoImageMap = () => {
+  try {
+    const raw = localStorage.getItem(AUTO_IMAGE_MAP_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const writeAutoImageMap = (map) => {
+  try {
+    localStorage.setItem(AUTO_IMAGE_MAP_KEY, JSON.stringify(map));
+  } catch {
+    // Ignore storage failures and just use in-memory fallback behavior.
+  }
+};
+
+const propertyImageKey = (property) => {
+  const id = String(property?.id || "").trim();
+  if (id) return `id:${id}`;
+  const title = String(property?.title || "property").trim().toLowerCase();
+  const location = String(property?.location || "city").trim().toLowerCase();
+  const price = String(property?.price || "").trim();
+  return `meta:${title}|${location}|${price}`;
+};
+
+const pickUniquePoolImage = (key, map) => {
+  const existing = map[key];
+  if (existing && REAL_ESTATE_IMAGE_POOL.includes(existing)) return existing;
+
+  const used = new Set(Object.values(map));
+  const start = hashString(key) % REAL_ESTATE_IMAGE_POOL.length;
+  let chosen = REAL_ESTATE_IMAGE_POOL[start];
+
+  for (let step = 0; step < REAL_ESTATE_IMAGE_POOL.length; step += 1) {
+    const idx = (start + step) % REAL_ESTATE_IMAGE_POOL.length;
+    const candidate = REAL_ESTATE_IMAGE_POOL[idx];
+    if (!used.has(candidate)) {
+      chosen = candidate;
+      break;
+    }
+  }
+
+  map[key] = chosen;
+  writeAutoImageMap(map);
+  return chosen;
+};
+
+export const autoPropertyImage = (property) => {
+  const key = propertyImageKey(property);
+  const map = readAutoImageMap();
+  return pickUniquePoolImage(key, map);
+};
+
+export const withImage = (property) => {
+  const candidate = String(property?.imageUrl || "").trim();
+  if (candidate && !LEGACY_IMAGE_SET.has(candidate)) return candidate;
+  return autoPropertyImage(property);
+};
