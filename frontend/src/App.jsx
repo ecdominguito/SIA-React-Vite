@@ -4,7 +4,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
-import PublicProperties from "./pages/PublicProperties.jsx";
 import PublicPropertyDetails from "./pages/PublicPropertyDetails.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
@@ -27,7 +26,6 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/properties" element={<PublicProperties />} />
       <Route path="/properties/:id" element={<PublicPropertyDetails />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

@@ -4,6 +4,7 @@ import { getCurrentUser, safeArray, saveArray, subscribeKeys } from "../lib/stor
 import DashboardLayout from "../components/DashboardLayout.jsx";
 import UIFeedback from "../components/UIFeedback.jsx";
 import {
+  applyPropertyImageFallback,
   autoPropertyImage,
   money,
   statusBadgeClass,
@@ -230,6 +231,29 @@ export default function AgentDashboard() {
     if (appFilter === "all") return mineApps;
     return mineApps.filter((a) => (a.status || "pending") === appFilter);
   }, [mineApps, appFilter]);
+  const sortedApps = useMemo(() => {
+    const statusRank = {
+      pending: 0,
+      approved: 1,
+      rescheduled: 1,
+      done: 2,
+      declined: 2,
+      cancelled: 2
+    };
+    return filteredApps
+      .slice()
+      .sort((a, b) => {
+        const aStatus = String(a.status || "pending").toLowerCase();
+        const bStatus = String(b.status || "pending").toLowerCase();
+        const aRank = Object.prototype.hasOwnProperty.call(statusRank, aStatus) ? statusRank[aStatus] : 3;
+        const bRank = Object.prototype.hasOwnProperty.call(statusRank, bStatus) ? statusRank[bStatus] : 3;
+        if (aRank !== bRank) return aRank - bRank;
+
+        const aSchedule = `${a.date || ""} ${a.time || ""}`;
+        const bSchedule = `${b.date || ""} ${b.time || ""}`;
+        return bSchedule.localeCompare(aSchedule);
+      });
+  }, [filteredApps]);
   const mineReviews = useMemo(
     () => reviews.filter((r) => r.agent === user?.username).slice().sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")),
     [reviews, user]
@@ -270,11 +294,8 @@ export default function AgentDashboard() {
     const matchedProperty = properties.find((p) => String(p.id) === String(appointment?.propertyId));
     return withImage(matchedProperty || { id: appointment?.propertyId, title: appointment?.propertyTitle, location: appointment?.location });
   };
-  const handlePropertyImageError = (event, label) => {
-    const el = event.currentTarget;
-    if (!el || el.dataset.fallbackApplied === "1") return;
-    el.dataset.fallbackApplied = "1";
-    el.src = autoPropertyImage({ title: label || "Property" });
+  const handlePropertyImageError = (event, propertyLike) => {
+    applyPropertyImageFallback(event.currentTarget, propertyLike || { title: "Property" });
   };
 
   if (!user) return null;
@@ -323,7 +344,7 @@ export default function AgentDashboard() {
                     <img
                       src={withImage(p)}
                       alt={p.title}
-                      onError={(e) => handlePropertyImageError(e, p.title || "Property")}
+                      onError={(e) => handlePropertyImageError(e, p)}
                     />
                     <div className="agent-property-body">
                       <div className="d-flex justify-content-between align-items-center gap-2">
@@ -333,6 +354,7 @@ export default function AgentDashboard() {
                         </span>
                       </div>
                       <p><i className="bi bi-geo-alt"></i> {p.location}</p>
+                      <div className="small muted">Agent: @{p.agent || "-"}</div>
                       <strong>PHP {money(p.price)}</strong>
                       <div className="agent-property-actions">
                         <Link className="btn btn-outline-dark btn-sm w-100" to={`/properties/${p.id}`}>
@@ -534,7 +556,7 @@ export default function AgentDashboard() {
                   <img
                     src={withImage(p)}
                     alt={p.title}
-                    onError={(e) => handlePropertyImageError(e, p.title || "Property")}
+                    onError={(e) => handlePropertyImageError(e, p)}
                   />
                   <div className="agent-property-body">
                     <div className="d-flex justify-content-between align-items-center gap-2">
@@ -544,6 +566,7 @@ export default function AgentDashboard() {
                       </span>
                     </div>
                     <p><i className="bi bi-geo-alt"></i> {p.location}</p>
+                    <div className="small muted">Agent: @{p.agent || "-"}</div>
                     <strong>PHP {money(p.price)}</strong>
                     <div className="agent-property-meta">
                       <span><i className="bi bi-door-open"></i> {Number(p.bedrooms || 0)} bed</span>
@@ -612,10 +635,7 @@ export default function AgentDashboard() {
                       <tr><th>Property</th><th>Customer</th><th>Date/Time</th><th>Status</th><th></th></tr>
                     </thead>
                     <tbody>
-                      {filteredApps
-                        .slice()
-                        .reverse()
-                        .map((a) => {
+                      {sortedApps.map((a) => {
                           const st = a.status || "pending";
                           const isRescheduling = String(a.id) === rescheduleTargetId;
                           return (
@@ -627,7 +647,7 @@ export default function AgentDashboard() {
                                       className="appointment-property-thumb"
                                       src={getPropertyImage(a)}
                                       alt={a.propertyTitle || "Property"}
-                                      onError={(e) => handlePropertyImageError(e, a.propertyTitle || "Property")}
+                                      onError={(e) => handlePropertyImageError(e, { id: a.propertyId, title: a.propertyTitle, location: a.location })}
                                     />
                                     <div>
                                       <div className="fw-bold">{a.propertyTitle}</div>
@@ -846,7 +866,7 @@ export default function AgentDashboard() {
                           src={getPropertyImage(reviewData)}
                           alt={reviewData.propertyTitle || "Property"}
                           onError={(e) => {
-                            handlePropertyImageError(e, reviewData.propertyTitle || "Property");
+                            handlePropertyImageError(e, { id: reviewData.propertyId, title: reviewData.propertyTitle, location: reviewData.location });
                           }}
                         />
                       </div>

@@ -104,7 +104,6 @@ export default function Register() {
             <button className="btn-primary" type="submit" style={{ marginTop: 14 }} disabled={!canSubmit}>Register</button>
             <div className="row-links">
               <Link to="/" className="btn btn-outline-dark btn-sm">Back to home</Link>
-              <Link to="/login" className="link">Back to login</Link>
             </div>
           </form>
         </div>

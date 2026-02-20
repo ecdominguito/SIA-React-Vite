@@ -2,8 +2,9 @@
   min-height:100vh;
   padding:26px 14px;
   background:
-    radial-gradient(760px 420px at 50% -18%, rgba(0,0,0,.05), transparent 62%),
-    linear-gradient(180deg, #f7f7f7, #f1f1f1 260px, #efefef 100%);
+    radial-gradient(720px 380px at 50% -10%, rgba(31,58,95,.14), transparent 64%),
+    radial-gradient(620px 320px at 8% 100%, rgba(21,29,40,.09), transparent 70%),
+    linear-gradient(180deg, #f8fafc, #eef2f6 260px, #eceff3 100%);
 }
 
 .auth-page{
@@ -26,12 +27,13 @@
   gap:10px;
   font-size:2rem;
   font-weight:800;
+  letter-spacing:-.02em;
 }
 
 .auth-login-top p{
   margin:8px 0 0;
   color:#5d6a7b;
-  font-size:1.05rem;
+  font-size:1.02rem;
 }
 
 .auth-page .card,
@@ -66,10 +68,12 @@
 }
 
 .auth-page-login .auth-login-card{
-  background:#f6f6f7;
-  border-color:#d9dce1;
-  box-shadow:none;
+  background:linear-gradient(180deg, #f8fafc 0%, #f4f6f8 100%);
+  border-color:#cfd5dd;
+  box-shadow:0 12px 28px rgba(20,30,44,.08);
   padding:24px;
+  border-radius:14px;
+  animation:login-card-in .35s ease-out;
 }
 
 .auth-page-login .auth-login-header{
@@ -77,11 +81,14 @@
 }
 
 .auth-page-login .auth-login-header .title{
-  font-size:2rem;
+  font-size:2.25rem;
+  line-height:1.08;
+  letter-spacing:-.03em;
 }
 
 .auth-page-login .auth-login-header .sub{
   color:#5d6a7b;
+  font-size:1rem;
 }
 
 .auth-page.single{max-width:980px}
@@ -91,6 +98,10 @@
 .auth-page .title{font-size:1.55rem;font-weight:800;color:var(--text);letter-spacing:-.02em}
 .auth-page .sub{color:var(--muted);font-size:.93rem}
 .auth-page .label{font-size:.85rem;color:var(--label,#475569);font-weight:700;margin:10px 0 6px;display:block}
+.auth-page-login .label{
+  font-size:.95rem;
+  margin:12px 0 7px;
+}
 
 .auth-grid{
   display:grid;
@@ -101,10 +112,10 @@
 .auth-page .input{
   width:100%;
   padding:11px 12px;
-  border-radius:12px;
+  border-radius:10px;
   border:1px solid var(--line);
   outline:none;
-  font-size:.92rem;
+  font-size:.96rem;
   background:#fff;
 }
 
@@ -124,9 +135,9 @@
   border:0;
   background:transparent;
   color:var(--muted);
-  width:30px;
-  height:30px;
-  border-radius:8px;
+  width:34px;
+  height:34px;
+  border-radius:10px;
   display:grid;
   place-items:center;
 }
@@ -142,8 +153,8 @@
 }
 
 .auth-page-login .input:focus{
-  border-color:#202226;
-  box-shadow:0 0 0 .2rem rgba(0,0,0,.08);
+  border-color:#19273b;
+  box-shadow:0 0 0 .22rem rgba(25,39,59,.12);
 }
 
 .auth-page .btn-primary{
@@ -163,14 +174,23 @@
 }
 
 .auth-page-login .btn-primary{
-  background:#111;
-  border-color:#111;
+  background:linear-gradient(180deg, #25374d 0%, #172434 100%);
+  border-color:#172434;
   color:#fff;
+  margin-top:14px;
+  min-height:52px;
+  border-radius:10px;
+  font-size:1rem;
+  letter-spacing:.01em;
+  box-shadow:0 10px 20px rgba(12,22,35,.2);
+  transition:transform .15s ease, box-shadow .2s ease, background .2s ease;
 }
 
 .auth-page-login .btn-primary:hover{
   filter:none;
-  background:#000;
+  background:linear-gradient(180deg, #1f2f44 0%, #121d2b 100%);
+  transform:translateY(-1px);
+  box-shadow:0 14px 24px rgba(12,22,35,.24);
 }
 
 .auth-page .btn-primary:disabled{
@@ -217,17 +237,32 @@
 .demo-row span{color:var(--muted);font-size:.86rem}
 
 .signup-row{
-  margin-top:13px;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(25,39,59,.14);
   text-align:center;
   color:var(--muted);
-  font-size:.9rem;
+  font-size:.95rem;
 }
 
 .auth-page .link{color:var(--primary);text-decoration:none;font-weight:800}
 .auth-page .row-links{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
 
 .auth-page-login .link{
-  color:#111;
+  color:#0f1e2f;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+
+@keyframes login-card-in{
+  from{
+    opacity:0;
+    transform:translateY(10px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
 .auth-page-register .card.narrow{
@@ -254,4 +289,13 @@
 @media (max-width:860px){
   .auth-shell{padding:18px 10px}
   .auth-grid{grid-template-columns:1fr}
+  .auth-page-login .auth-login-header .title{font-size:2rem}
+  .auth-page-login .auth-login-card{padding:22px}
+  .auth-page .input{font-size:1rem}
+}
+
+@media (max-width:520px){
+  .auth-login-brand{font-size:1.8rem}
+  .auth-login-top p{font-size:1rem}
+  .auth-page-login .auth-login-header .title{font-size:2.05rem}
 }

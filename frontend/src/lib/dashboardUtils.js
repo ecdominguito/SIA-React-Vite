@@ -34,11 +34,37 @@ export const REAL_ESTATE_IMAGE_POOL = [
   "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?auto=format&fit=crop&w=1600&q=80",
   "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?auto=format&fit=crop&w=1600&q=80",
   "https://images.unsplash.com/photo-1600121848594-d8644e57abab?auto=format&fit=crop&w=1600&q=80",
-  "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80"
+  "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1560185007-5f0bb1866cab?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1501183638710-841dd1904471?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1600&q=80",
+  "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&w=1600&q=80"
 ];
 
 const LEGACY_IMAGE_SET = new Set(PREVIOUS_AUTO_IMAGE_POOL);
-const AUTO_IMAGE_MAP_KEY = "propertyAutoImageMapV1";
+const AUTO_IMAGE_MAP_KEY = "propertyAutoImageMapV2";
+
+const isUsableImageUrl = (value) => {
+  const candidate = String(value || "").trim();
+  if (!candidate) return false;
+
+  const normalized = candidate.toLowerCase();
+  if (normalized.startsWith("c:\\") || normalized.startsWith("file:") || normalized.includes("fakepath")) {
+    return false;
+  }
+
+  return (
+    normalized.startsWith("http://") ||
+    normalized.startsWith("https://") ||
+    normalized.startsWith("data:image/") ||
+    normalized.startsWith("blob:") ||
+    normalized.startsWith("/")
+  );
+};
 
 export const money = (n) => Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 0 });
 
@@ -138,8 +164,69 @@ export const autoPropertyImage = (property) => {
   return pickUniquePoolImage(key, map);
 };
 
+export const makePropertyFallbackImage = (label) => {
+  const safeLabel = String(label || "Property").slice(0, 28);
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='700' viewBox='0 0 1200 700'>
+    <defs>
+      <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+        <stop offset='0%' stop-color='#dbe7f6'/>
+        <stop offset='100%' stop-color='#f0e6d8'/>
+      </linearGradient>
+    </defs>
+    <rect width='1200' height='700' fill='url(#g)'/>
+    <g fill='#1f3a5f' opacity='0.25'>
+      <rect x='120' y='250' width='230' height='170' rx='12'/>
+      <rect x='385' y='210' width='320' height='210' rx='12'/>
+      <rect x='740' y='165' width='340' height='255' rx='12'/>
+    </g>
+    <text x='600' y='520' text-anchor='middle' font-family='Segoe UI, sans-serif' font-size='40' fill='#1d232f'>${safeLabel}</text>
+  </svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
+export const applyPropertyImageFallback = (image, property) => {
+  if (!image) return;
+
+  const poolSize = REAL_ESTATE_IMAGE_POOL.length;
+  if (poolSize <= 0) {
+    image.onerror = null;
+    image.src = makePropertyFallbackImage(property?.title || "Property");
+    return;
+  }
+
+  const startIndex = Number(image.dataset.poolStartIndex || "-1");
+  const attempts = Number(image.dataset.poolAttempts || "0");
+
+  if (startIndex < 0 || attempts <= 0) {
+    const firstFallback = autoPropertyImage(property || {});
+    const firstIndex = REAL_ESTATE_IMAGE_POOL.indexOf(firstFallback);
+    if (firstIndex < 0 || !firstFallback) {
+      image.onerror = null;
+      image.src = makePropertyFallbackImage(property?.title || "Property");
+      return;
+    }
+    image.dataset.poolStartIndex = String(firstIndex);
+    image.dataset.poolAttempts = "1";
+    image.src = firstFallback;
+    return;
+  }
+
+  if (attempts < poolSize) {
+    const nextIndex = (startIndex + attempts) % poolSize;
+    image.dataset.poolAttempts = String(attempts + 1);
+    image.src = REAL_ESTATE_IMAGE_POOL[nextIndex];
+    return;
+  }
+
+  if (image.dataset.localFallbackApplied !== "1") {
+    image.dataset.localFallbackApplied = "1";
+    image.onerror = null;
+    image.src = makePropertyFallbackImage(property?.title || "Property");
+  }
+};
+
 export const withImage = (property) => {
   const candidate = String(property?.imageUrl || "").trim();
-  if (candidate && !LEGACY_IMAGE_SET.has(candidate)) return candidate;
+  if (candidate && !LEGACY_IMAGE_SET.has(candidate) && isUsableImageUrl(candidate)) return candidate;
   return autoPropertyImage(property);
 };

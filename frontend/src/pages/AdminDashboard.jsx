@@ -4,7 +4,7 @@ import { getCurrentUser, safeArray, saveArray, subscribeKeys } from "../lib/stor
 import DashboardLayout from "../components/DashboardLayout.jsx";
 import UIFeedback from "../components/UIFeedback.jsx";
 import {
-  autoPropertyImage,
+  applyPropertyImageFallback,
   money,
   statusBadgeClass,
   tripStatus,
@@ -153,11 +153,8 @@ export default function AdminDashboard() {
     const matchedProperty = properties.find((p) => String(p.id) === String(appointment?.propertyId));
     return withImage(matchedProperty || { id: appointment?.propertyId, title: appointment?.propertyTitle, location: appointment?.location });
   };
-  const handlePropertyImageError = (event, label) => {
-    const el = event.currentTarget;
-    if (!el || el.dataset.fallbackApplied === "1") return;
-    el.dataset.fallbackApplied = "1";
-    el.src = autoPropertyImage({ title: label || "Property" });
+  const handlePropertyImageError = (event, propertyLike) => {
+    applyPropertyImageFallback(event.currentTarget, propertyLike || { title: "Property" });
   };
 
   const usernameExists = (uname) => users.some((u) => cleanUsername(u.username) === cleanUsername(uname));
@@ -409,7 +406,7 @@ export default function AdminDashboard() {
                   <img
                     src={withImage(p)}
                     alt={p.title || "Property"}
-                    onError={(e) => handlePropertyImageError(e, p.title || "Property")}
+                    onError={(e) => handlePropertyImageError(e, p)}
                   />
                   <div className="agent-property-body">
                     <div className="d-flex justify-content-between align-items-center gap-2">
@@ -460,7 +457,7 @@ export default function AdminDashboard() {
                             className="appointment-property-thumb"
                             src={getPropertyImage(a)}
                             alt={a.propertyTitle || "Property"}
-                            onError={(e) => handlePropertyImageError(e, a.propertyTitle || "Property")}
+                            onError={(e) => handlePropertyImageError(e, { id: a.propertyId, title: a.propertyTitle, location: a.location })}
                           />
                           <div>
                             <div className="fw-bold">{a.propertyTitle}</div>
@@ -541,7 +538,7 @@ export default function AdminDashboard() {
                           className="review-modern-thumb"
                           src={getPropertyImage(reviewData)}
                           alt={reviewData.propertyTitle || "Property"}
-                          onError={(e) => handlePropertyImageError(e, reviewData.propertyTitle || "Property")}
+                          onError={(e) => handlePropertyImageError(e, { id: reviewData.propertyId, title: reviewData.propertyTitle, location: reviewData.location })}
                         />
                       </div>
                       <div className="review-modern-body">

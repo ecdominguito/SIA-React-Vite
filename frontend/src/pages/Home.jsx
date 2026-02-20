@@ -1,7 +1,22 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { safeArray } from "../lib/storage.js";
+import { withImage, money, applyPropertyImageFallback } from "../lib/dashboardUtils.js";
 
 export default function Home() {
+  const allFeatured = useMemo(() => safeArray("allProperties"), []);
+  const pageSize = 6;
+  const totalPages = Math.max(1, Math.ceil(allFeatured.length / pageSize));
+  const [currentPage, setCurrentPage] = useState(1);
+  const featured = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return allFeatured.slice(start, start + pageSize);
+  }, [allFeatured, currentPage]);
+  const pageNumbers = useMemo(() => Array.from({ length: totalPages }, (_, idx) => idx + 1), [totalPages]);
+  const handleImageError = (event, property) => {
+    applyPropertyImageFallback(event.currentTarget, property || {});
+  };
+
   return (
     <div className="public-shell public-home-shell">
       <header className="public-topbar public-home-topbar">
@@ -11,9 +26,7 @@ export default function Home() {
             <strong>RealEstate Pro</strong>
           </div>
           <div className="public-actions public-home-actions">
-            <Link className="public-link-minimal" to="/login">
-              Sign in
-            </Link>
+            <Link className="btn btn-outline-dark btn-sm" to="/login">Sign in</Link>
             <Link className="btn btn-dark btn-sm" to="/register">Get Started</Link>
           </div>
         </div>
@@ -21,49 +34,83 @@ export default function Home() {
 
       <main className="public-wrap public-home-main">
         <section className="public-hero public-home-hero">
-          <h1>Find Your Perfect Property with Ease</h1>
+          <span className="public-home-kicker">Trusted Real Estate Platform</span>
+          <h1>Find a Home You Will Love, Faster</h1>
           <p>
-            Streamline your real estate journey with our comprehensive property management platform.
-            Browse listings, schedule viewings, and connect with agents seamlessly.
+            Discover verified listings, compare real options, and book your viewing in minutes.
+            From first search to final decision, RealEstate Pro helps you move with confidence.
           </p>
-          <div className="public-cta-row">
-            <Link className="btn btn-dark" to="/properties">
-              Start Browsing <i className="bi bi-arrow-right ms-1"></i>
-            </Link>
-            <Link className="btn btn-outline-dark" to="/login">Sign In</Link>
+          <div className="public-home-trust-list" aria-label="Why choose RealEstate Pro">
+            <span>Verified Listings</span>
+            <span>Fast Viewing Requests</span>
+            <span>Trusted Agents</span>
           </div>
         </section>
 
-        <section className="public-home-features">
-          <h2>Everything You Need</h2>
-          <div className="public-home-feature-grid">
-            <article className="public-home-feature-card">
-              <div className="public-home-feature-icon"><i className="bi bi-building"></i></div>
-              <h3>Property Listings</h3>
-              <p>Browse through our extensive collection of properties with detailed information and photos.</p>
-            </article>
-            <article className="public-home-feature-card">
-              <div className="public-home-feature-icon"><i className="bi bi-calendar-check"></i></div>
-              <h3>Easy Scheduling</h3>
-              <p>Book property viewings at your convenience with our intuitive scheduling system.</p>
-            </article>
-            <article className="public-home-feature-card">
-              <div className="public-home-feature-icon"><i className="bi bi-people"></i></div>
-              <h3>Expert Agents</h3>
-              <p>Connect with experienced real estate agents who will guide you through every step.</p>
-            </article>
+        <section className="public-home-featured">
+          <div className="public-home-featured-head">
+            <h2>Featured Properties</h2>
+            <p>Handpicked homes and high-demand units available now.</p>
           </div>
-        </section>
-
-        <section className="public-home-cta">
-          <article className="public-home-cta-card">
-            <i className="bi bi-shield public-home-cta-icon"></i>
-            <h2>Ready to Find Your Dream Home?</h2>
-            <p>Join thousands of satisfied customers who found their perfect property through our platform.</p>
-            <Link className="btn btn-light btn-sm" to="/register">
-              Create Free Account <i className="bi bi-arrow-right ms-1"></i>
-            </Link>
-          </article>
+          <div className="public-home-property-grid">
+            {featured.map((property) => (
+              <article key={property.id} className="public-home-property-card">
+                <img
+                  src={withImage(property)}
+                  alt={property.title || "Property"}
+                  onError={(event) => handleImageError(event, property)}
+                />
+                <div className="public-home-property-body">
+                  <h3>{property.title || "Property Listing"}</h3>
+                  <p>{property.location || "-"}</p>
+                  <div className="small muted">Agent: @{property.agent || "-"}</div>
+                  <div className="public-home-property-foot">
+                    <strong>PHP {money(property.price)}</strong>
+                    <Link className="btn btn-dark btn-sm" to={`/properties/${property.id}`}>View</Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+            {!featured.length && (
+              <div className="public-home-empty">
+                <i className="bi bi-house"></i>
+                <p>No featured properties yet.</p>
+              </div>
+            )}
+          </div>
+          {allFeatured.length > pageSize && (
+            <div className="public-home-pagination">
+              <button
+                type="button"
+                className="btn btn-outline-dark btn-sm"
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+              >
+                Prev
+              </button>
+              <div className="public-home-page-list" aria-label="Featured properties pages">
+                {pageNumbers.map((page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    className={`btn btn-sm ${page === currentPage ? "btn-dark" : "btn-outline-dark"}`}
+                    onClick={() => setCurrentPage(page)}
+                    aria-current={page === currentPage ? "page" : undefined}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="btn btn-outline-dark btn-sm"
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </section>
       </main>
 

@@ -4,7 +4,8 @@ import { getCurrentUser, safeArray, saveArray, setCurrentUser as persistCurrentU
 import DashboardLayout from "../components/DashboardLayout.jsx";
 import UIFeedback from "../components/UIFeedback.jsx";
 import {
-  autoPropertyImage,
+  applyPropertyImageFallback,
+  makePropertyFallbackImage,
   money,
   statusBadgeClass,
   tripAttendees,
@@ -229,32 +230,8 @@ export default function CustomerDashboard() {
     setBookingStep(1);
   };
 
-  const makeFallbackImage = (label) => {
-    const safeLabel = String(label || "Property").slice(0, 28);
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='700' viewBox='0 0 1200 700'>
-      <defs>
-        <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-          <stop offset='0%' stop-color='#dbe7f6'/>
-          <stop offset='100%' stop-color='#f0e6d8'/>
-        </linearGradient>
-      </defs>
-      <rect width='1200' height='700' fill='url(#g)'/>
-      <g fill='#1f3a5f' opacity='0.25'>
-        <rect x='120' y='250' width='230' height='170' rx='12'/>
-        <rect x='385' y='210' width='320' height='210' rx='12'/>
-        <rect x='740' y='165' width='340' height='255' rx='12'/>
-      </g>
-      <text x='600' y='520' text-anchor='middle' font-family='Segoe UI, sans-serif' font-size='40' fill='#1d232f'>${safeLabel}</text>
-    </svg>`;
-    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
-  };
-
-  const handlePropertyImageError = (e, label) => {
-    const el = e.currentTarget;
-    if (!el || el.dataset.fallbackApplied === "1") return;
-    el.dataset.fallbackApplied = "1";
-    el.onerror = null;
-    el.src = autoPropertyImage({ title: label || "Property" }) || makeFallbackImage(label || "Property");
+  const handlePropertyImageError = (e, propertyLike) => {
+    applyPropertyImageFallback(e.currentTarget, propertyLike || { title: "Property" });
   };
 
   const getPropertyImage = (item) => {
@@ -271,7 +248,7 @@ export default function CustomerDashboard() {
         imageUrl: ""
       }
     );
-    return resolved || makeFallbackImage(item?.propertyTitle || "Property");
+    return resolved || makePropertyFallbackImage(item?.propertyTitle || "Property");
   };
 
   return (
@@ -309,7 +286,7 @@ export default function CustomerDashboard() {
                   <img
                     src={withImage(p)}
                     alt={p.title}
-                    onError={(e) => handlePropertyImageError(e, p.title || "Property")}
+                    onError={(e) => handlePropertyImageError(e, p)}
                   />
                   <div className="agent-property-body">
                     <div className="d-flex justify-content-between gap-2 align-items-center">
@@ -319,8 +296,8 @@ export default function CustomerDashboard() {
                       </span>
                     </div>
                     <p><i className="bi bi-geo-alt"></i> {p.location}</p>
+                    <div className="small muted">Agent: @{p.agent || "-"}</div>
                     <strong>PHP {money(p.price)}</strong>
-                    <div className="small muted">{p.description || "No description provided."}</div>
                     <div className="agent-property-actions">
                       <Link className="btn btn-outline-dark btn-sm customer-property-action" to={`/properties/${p.id}`}>
                         Details
@@ -503,7 +480,7 @@ export default function CustomerDashboard() {
                                 src={appointmentImage}
                                 alt={a.propertyTitle || "Property"}
                                 onError={(e) => {
-                                  handlePropertyImageError(e, a.propertyTitle || "Property");
+                                  handlePropertyImageError(e, { id: a.propertyId, title: a.propertyTitle, location: a.location });
                                 }}
                               />
                               <div>
@@ -619,7 +596,7 @@ export default function CustomerDashboard() {
                         src={getPropertyImage(reviewData)}
                         alt={reviewData.propertyTitle || "Property"}
                         onError={(e) => {
-                          handlePropertyImageError(e, reviewData.propertyTitle || "Property");
+                          handlePropertyImageError(e, { id: reviewData.propertyId, title: reviewData.propertyTitle, location: reviewData.location });
                         }}
                       />
                     </div>

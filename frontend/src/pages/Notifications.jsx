@@ -54,7 +54,7 @@ export default function Notifications() {
             <button type="button" className="btn btn-outline-dark btn-sm" onClick={markAllRead} disabled={!unreadCount}>
               Mark all read
             </button>
-            <Link className="btn btn-dark btn-sm" to={backPath}>Back to Dashboard</Link>
+            <Link className="btn btn-dark btn-sm" to={backPath}>Back</Link>
           </div>
         </div>
 

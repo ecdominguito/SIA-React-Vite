@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getCurrentUser, safeArray } from "../lib/storage.js";
-import { withImage, money, autoPropertyImage } from "../lib/dashboardUtils.js";
+import { withImage, money, applyPropertyImageFallback } from "../lib/dashboardUtils.js";
 
 export default function PublicPropertyDetails() {
   const params = useParams();
@@ -12,10 +12,7 @@ export default function PublicPropertyDetails() {
     [params.id]
   );
   const handleImageError = (event) => {
-    const image = event.currentTarget;
-    if (!image || image.dataset.fallbackApplied === "1") return;
-    image.dataset.fallbackApplied = "1";
-    image.src = autoPropertyImage(property || {});
+    applyPropertyImageFallback(event.currentTarget, property || {});
   };
 
   return (
@@ -28,9 +25,12 @@ export default function PublicPropertyDetails() {
           </div>
           <div className="public-actions">
             {user ? (
-              <Link className="btn btn-dark btn-sm" to={backToDashboard}>Back to Dashboard</Link>
+              <Link className="btn btn-dark btn-sm" to={backToDashboard}>Back</Link>
             ) : (
-              <Link className="btn btn-dark btn-sm" to="/login">Login</Link>
+              <>
+                <Link className="btn btn-outline-dark btn-sm" to="/">Back</Link>
+                <Link className="btn btn-dark btn-sm" to="/login">Login</Link>
+              </>
             )}
           </div>
         </div>
@@ -56,7 +56,6 @@ export default function PublicPropertyDetails() {
               {!user && (
                 <div className="public-cta-row">
                   <Link className="btn btn-dark btn-sm" to="/register">Register to Book</Link>
-                  <Link className="btn btn-outline-dark btn-sm" to="/login">Login</Link>
                 </div>
               )}
             </article>
