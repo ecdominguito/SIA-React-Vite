@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getCurrentUser, safeArray, saveArray, subscribeKeys } from "../lib/storage.js";
 
 function dashboardPathForRole(role) {
@@ -9,6 +9,7 @@ function dashboardPathForRole(role) {
 }
 
 export default function Notifications() {
+  const navigate = useNavigate();
   const user = getCurrentUser();
   const [notifications, setNotifications] = useState([]);
 
@@ -27,6 +28,13 @@ export default function Notifications() {
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n?.readAt).length, [notifications]);
   const backPath = dashboardPathForRole(user?.role);
+  const goBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate(backPath || "/dashboard");
+  };
 
   const markAllRead = () => {
     const username = String(getCurrentUser()?.username || "").trim();
@@ -54,7 +62,7 @@ export default function Notifications() {
             <button type="button" className="btn btn-outline-dark btn-sm" onClick={markAllRead} disabled={!unreadCount}>
               Mark all read
             </button>
-            <Link className="btn btn-dark btn-sm" to={backPath}>Back</Link>
+            <button type="button" className="btn btn-dark btn-sm" onClick={goBack}>Back</button>
           </div>
         </div>
 

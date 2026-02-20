@@ -1,16 +1,23 @@
 import React, { useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getCurrentUser, safeArray } from "../lib/storage.js";
 import { withImage, money, applyPropertyImageFallback } from "../lib/dashboardUtils.js";
 
 export default function PublicPropertyDetails() {
   const params = useParams();
+  const navigate = useNavigate();
   const user = getCurrentUser();
-  const backToDashboard = user?.role === "admin" ? "/admin" : user?.role === "agent" ? "/agent" : "/customer";
   const property = useMemo(
     () => safeArray("allProperties").find((x) => String(x.id) === String(params.id)),
     [params.id]
   );
+  const goBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate(user ? "/dashboard" : "/");
+  };
   const handleImageError = (event) => {
     applyPropertyImageFallback(event.currentTarget, property || {});
   };
@@ -25,10 +32,10 @@ export default function PublicPropertyDetails() {
           </div>
           <div className="public-actions">
             {user ? (
-              <Link className="btn btn-dark btn-sm" to={backToDashboard}>Back</Link>
+              <button type="button" className="btn btn-dark btn-sm" onClick={goBack}>Back</button>
             ) : (
               <>
-                <Link className="btn btn-outline-dark btn-sm" to="/">Back</Link>
+                <button type="button" className="btn btn-outline-dark btn-sm" onClick={goBack}>Back</button>
                 <Link className="btn btn-dark btn-sm" to="/login">Login</Link>
               </>
             )}
