@@ -5,12 +5,6 @@ import { getCurrentUser } from "../lib/storage.js";
 import { cleanUsername } from "../lib/inputUtils.js";
 import "../styles/login.css";
 
-const demoAccounts = [
-  { role: "Admin", username: "admin", password: "admin123" },
-  { role: "Agent", username: "agent", password: "agent123" },
-  { role: "Customer", username: "customer", password: "customer123" }
-];
-
 export default function Login() {
   const nav = useNavigate();
   const existing = useMemo(() => getCurrentUser(), []);
@@ -95,16 +89,6 @@ export default function Login() {
               <span>Sign in</span>
               <i className="bi bi-arrow-right"></i>
             </button>
-
-            <div className="demo-divider"><span>Demo Accounts</span></div>
-            <div className="demo-list" aria-label="Demo accounts">
-              {demoAccounts.map((item) => (
-                <div className="demo-row" key={item.role}>
-                  <strong>{item.role}</strong>
-                  <span>{item.username} / {item.password}</span>
-                </div>
-              ))}
-            </div>
 
             <div className="signup-row">
               <span>Don't have an account? </span>
